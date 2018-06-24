@@ -75,8 +75,11 @@ class LogisticRegression:
                 train_op = optimizer.minimize(loss=cost)
 
             with tf.name_scope('metric'):
+                # define the prediction matching
                 correct_prediction = tf.equal(x=tf.argmax(input=predictions, axis=1),
                                               y=tf.argmax(input=input_labels, axis=1))
+
+                # define the accuracy operation
                 accuracy_op = tf.reduce_mean(input_tensor=tf.cast(x=correct_prediction, dtype=tf.float32,
                                                                   name='accuracy'))
 
