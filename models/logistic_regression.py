@@ -38,6 +38,7 @@ class LogisticRegression:
         :param num_classes: The number of classes in the dataset to be used.
         :param num_features: The number of features in the dataset to be used.
         """
+        self.name = 'logistic_regression'
         self.num_classes = num_classes
         self.num_features = num_features
 
