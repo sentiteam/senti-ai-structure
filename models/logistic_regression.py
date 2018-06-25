@@ -95,6 +95,10 @@ class LogisticRegression:
             # define tensorboard report on accuracy
             tf.summary.scalar('accuracy', accuracy_op)
 
+            # define variable initializer op
+            init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+
+            # merge all tensorboard logs
             merged = tf.summary.merge_all()
 
             self.input_features = input_features
@@ -106,6 +110,7 @@ class LogisticRegression:
             self.cost = cost
             self.train_op = train_op
             self.accuracy_op = accuracy_op
+            self.init_op = init_op
             self.merged = merged
 
         sys.stdout.write('<log> Building graph...\n')
@@ -158,9 +163,6 @@ class LogisticRegression:
         # create trained model saver
         saver = tf.train.Saver()
 
-        # define variable initializer op
-        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
-
         # define timestamp
         timestamp = str(time.asctime())
 
@@ -170,7 +172,7 @@ class LogisticRegression:
         with tf.Session() as sess:
 
             # run variable initializer
-            sess.run(init_op)
+            sess.run(self.init_op)
 
             # get checkpoint state
             checkpoint = tf.train.get_checkpoint_state(checkpoint_dir=checkpoint_path)
