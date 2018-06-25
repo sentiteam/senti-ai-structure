@@ -22,8 +22,10 @@ from __future__ import print_function
 __version__ = '1.0.0'
 __author__ = 'Abien Fred Agarap'
 
+import os
 import sys
 import tensorflow as tf
+import time
 
 
 class LogisticRegression:
@@ -96,5 +98,116 @@ class LogisticRegression:
         __build__()
         sys.stdout.write('\n</log>')
 
-    def train(self):
-        pass
+    def train(self, training_data, training_data_size, testing_data,
+              batch_size=8, checkpoint_path='./checkpoints/', epochs=1, learning_rate=1e-2, log_path='./logs/'):
+        """
+
+        :param training_data:
+        :param training_data_size:
+        :param testing_data:
+        :param batch_size:
+        :param checkpoint_path:
+        :param epochs:
+        :param learning_rate:
+        :param log_path:
+        :return:
+        """
+
+        # define assert statements for quick bug checking
+        assert type(training_data) is list, \
+            'Expected data type : list, but {} is {}'.format(training_data, type(training_data))
+        assert type(training_data_size) is int, \
+            'Expected data type : int, but {} is {}'.format(training_data_size, type(training_data_size))
+        assert type(testing_data) is list, \
+            'Expected data type : list, but {} is {}'.format(testing_data, type(testing_data))
+        assert type(batch_size) is int, \
+            'Expected data type : int, but {} is {}'.format(batch_size, type(batch_size))
+        assert batch_size > 0, 'Expected value greater than 0, but {} is not.'.format(batch_size)
+        assert type(checkpoint_path) is str, \
+            'Expected data type : str, but {} is {}'.format(checkpoint_path, type(checkpoint_path))
+        assert type(epochs) is int, \
+            'Expected data type : int, but {} is {}'.format(epochs, type(epochs))
+        assert epochs > 0, 'Expected value greater than 0, but {} is not.'.format(epochs)
+        assert type(learning_rate) is float, \
+            'Expected data type : float, but {} is {}'.format(learning_rate, type(learning_rate))
+        assert type(log_path) is str, \
+            'Expected data type : str, but {} is {}'.format(log_path, type(log_path))
+
+        # create checkpoint_path if it does not exist
+        if not os.path.exists(path=checkpoint_path):
+            os.mkdir(path=checkpoint_path)
+
+        # create log_path if it does not exist
+        if not os.path.exists(path=log_path):
+            os.mkdir(path=log_path)
+
+        # create trained model saver
+        saver = tf.train.Saver()
+
+        # define variable initializer op
+        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+
+        # define timestamp
+        timestamp = str(time.asctime())
+
+        # define tensorboard writer
+        train_writer = tf.summary.FileWriter(logdir=os.path.join(log_path, timestamp + '-training'))
+
+        with tf.Session() as sess:
+
+            # run variable initializer
+            sess.run(init_op)
+
+            # get checkpoint state
+            checkpoint = tf.train.get_checkpoint_state(checkpoint_dir=checkpoint_path)
+
+            # restore trained model if one exists
+            if checkpoint and checkpoint.model_checkpoint_path:
+                saver = tf.train.import_meta_graph(meta_graph_or_file=checkpoint.model_checkpoint_path + '.meta')
+                saver.restore(sess=sess, save_path=tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path))
+
+            try:
+                for step in range(epochs * training_data_size):
+
+                    # get batch of features and labels
+                    training_features, training_labels = self.next_batch(batch_size=batch_size,
+                                                                         features=training_data[0],
+                                                                         labels=training_data[1])
+
+                    # define a dictionary feed for the computational graph
+                    feed_dict = {self.input_features: training_features,
+                                 self.input_labels: training_labels,
+                                 self.learning_rate: learning_rate}
+
+                    # get tensor values by running tensor operations
+                    _, training_summary, cost_value, accuracy_value = sess.run([self.train_op,
+                                                                                self.merged,
+                                                                                self.cost,
+                                                                                self.accuracy_op],
+                                                                               feed_dict=feed_dict)
+
+                    if step % 100 == 0 and step > 0:
+
+                        # display step loss and step accuracy
+                        print('[step {}] loss : {}, accuracy : {}'.format(step, cost_value, accuracy_value))
+
+                        # add tensorboard summary
+                        train_writer.add_summary(summary=training_summary, global_step=step)
+
+                        # save trained model at current step
+                        saver.save(sess=sess, save_path=os.path.join(checkpoint_path, self.name), global_step=step)
+
+            except KeyboardInterrupt:
+                print('Training interrupted at {}'.format(step))
+                os._exit(1)
+            finally:
+                print('Training done at step {}'.format(step))
+
+                # define a dictionary feed for computational graph
+                feed_dict = {self.input_features: testing_data[0], self.input_labels: testing_data[1]}
+
+                # get tensor values by running tensor operations
+                cost_value, accuracy_value = sess.run([self.cost, self.accuracy_op], feed_dict=feed_dict)
+
+                # display test loss and test accuracy
+                print('Test Loss : {}, Test Accuracy : {}'.format(cost_value, accuracy_value))
