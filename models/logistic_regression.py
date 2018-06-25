@@ -22,6 +22,7 @@ from __future__ import print_function
 __version__ = '1.0.0'
 __author__ = 'Abien Fred Agarap'
 
+import numpy as np
 import os
 import sys
 import tensorflow as tf
@@ -211,3 +212,25 @@ class LogisticRegression:
 
                 # display test loss and test accuracy
                 print('Test Loss : {}, Test Accuracy : {}'.format(cost_value, accuracy_value))
+
+    @staticmethod
+    def next_batch(batch_size, features, labels):
+        """Returns a batch of features and labels
+
+        :param batch_size: The number of data in a batch.
+        :param features: The features to be batched.
+        :param labels: The labels to be batched.
+        :return:
+        """
+
+        # define indices from 0 to n - 1
+        indices = np.arange(start=0, stop=features.shape[0])
+
+        # shuffle the indices
+        np.random.shuffle(indices)
+
+        # get a batch of shuffled indices
+        indices = indices[:batch_size]
+
+        # return batches of shuffled features and labels
+        return features[indices], labels[indices]
