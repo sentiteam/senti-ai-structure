@@ -66,6 +66,9 @@ class LogisticRegression:
                 # define the prediction node
                 predictions = tf.nn.softmax(linear_model, name='predictions')
 
+            # define tensorboard report on linear_model
+            tf.summary.histogram('pre-activations', linear_model)
+
             with tf.name_scope('training_operations'):
                 # define the optimization algorithm
                 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -77,6 +80,9 @@ class LogisticRegression:
                 # define the optimization operation
                 train_op = optimizer.minimize(loss=cost)
 
+            # define tensorboard report on cost
+            tf.summary.scalar('cost', cost)
+
             with tf.name_scope('metric'):
                 # define the prediction matching
                 correct_prediction = tf.equal(x=tf.argmax(input=predictions, axis=1),
@@ -85,6 +91,11 @@ class LogisticRegression:
                 # define the accuracy operation
                 accuracy_op = tf.reduce_mean(input_tensor=tf.cast(x=correct_prediction, dtype=tf.float32,
                                                                   name='accuracy'))
+
+            # define tensorboard report on accuracy
+            tf.summary.scalar('accuracy', accuracy_op)
+
+            merged = tf.summary.merge_all()
 
             self.input_features = input_features
             self.input_labels = input_labels
@@ -95,6 +106,7 @@ class LogisticRegression:
             self.cost = cost
             self.train_op = train_op
             self.accuracy_op = accuracy_op
+            self.merged = merged
 
         sys.stdout.write('<log> Building graph...\n')
         __build__()
