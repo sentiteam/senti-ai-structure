@@ -61,7 +61,7 @@ class LogisticRegression:
                 biases = tf.Variable(tf.random_normal(shape=[self.num_classes]), name='biases')
 
                 # define the linear model
-                linear_model = tf.add(x=tf.matmul(a=weights, b=input_features), y=biases)
+                linear_model = tf.add(x=tf.matmul(a=input_features, b=weights), y=biases)
 
                 # define the prediction node
                 predictions = tf.nn.softmax(linear_model, name='predictions')
