@@ -120,16 +120,16 @@ class LogisticRegression:
 
     def train(self, training_data, training_data_size, testing_data,
               batch_size=8, checkpoint_path='./checkpoints/', epochs=1, learning_rate=1e-2, log_path='./logs/'):
-        """
+        """Trains the Logistic Regression model
 
-        :param training_data:
-        :param training_data_size:
-        :param testing_data:
-        :param batch_size:
-        :param checkpoint_path:
-        :param epochs:
-        :param learning_rate:
-        :param log_path:
+        :param training_data: The training data to be used.
+        :param training_data_size: The size of the training data to be used.
+        :param testing_data: The testing data to be used after training.
+        :param batch_size: The number of data in a batch.
+        :param checkpoint_path: The path where the trained model will be saved.
+        :param epochs: The number of passes through the entire dataset.
+        :param learning_rate: The learning rate of the model.
+        :param log_path: The path where to save the TensorBoard logs.
         :return:
         """
 
