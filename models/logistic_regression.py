@@ -92,6 +92,7 @@ class LogisticRegression:
             self.weights = weights
             self.biases = biases
             self.predictions = predictions
+            self.cost = cost
             self.train_op = train_op
             self.accuracy_op = accuracy_op
 
