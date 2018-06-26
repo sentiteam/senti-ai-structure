@@ -182,6 +182,7 @@ class LogisticRegression:
             if checkpoint and checkpoint.model_checkpoint_path:
                 saver = tf.train.import_meta_graph(meta_graph_or_file=checkpoint.model_checkpoint_path + '.meta')
                 saver.restore(sess=sess, save_path=tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path))
+                print('Loaded model from {}'.format(tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path)))
 
             try:
                 for step in range(epochs * training_data_size):
