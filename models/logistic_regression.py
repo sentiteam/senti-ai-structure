@@ -275,7 +275,7 @@ class LogisticRegression:
         :param batch_size: The number of data in a batch.
         :param features: The features to be batched.
         :param labels: The labels to be batched.
-        :return:
+        :return: The sampled numpy arrays from the dataset.
         """
 
         # define indices from 0 to n - 1
