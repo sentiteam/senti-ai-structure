@@ -182,6 +182,7 @@ class LogisticRegression:
             if checkpoint and checkpoint.model_checkpoint_path:
                 saver = tf.train.import_meta_graph(meta_graph_or_file=checkpoint.model_checkpoint_path + '.meta')
                 saver.restore(sess=sess, save_path=tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path))
+                print('Loaded model from {}'.format(tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path)))
 
             try:
                 for step in range(epochs * training_data_size):
@@ -229,6 +230,44 @@ class LogisticRegression:
                 # display test loss and test accuracy
                 print('Test Loss : {}, Test Accuracy : {}'.format(cost_value, accuracy_value))
 
+    def predict(self, sample_feature, checkpoint_path):
+        """Returns the prediction of the trained model
+
+        :param sample_feature: The feature to be classified by the trained model.
+        :param checkpoint_path: The path where the trained model is located.
+        :return: The numpy array containing the prediction by the trained model.
+        """
+
+        with tf.Session() as sess:
+
+            # run variable initializer
+            sess.run(self.init_op)
+
+            # get checkpoint state
+            checkpoint = tf.train.get_checkpoint_state(checkpoint_dir=checkpoint_path)
+
+            # restore trained model if one exists
+            if checkpoint and checkpoint.model_checkpoint_path:
+                saver = tf.train.import_meta_graph(meta_graph_or_file=checkpoint.model_checkpoint_path + '.meta')
+                saver.restore(sess=sess, save_path=tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path))
+                print('Loaded model from {}'.format(tf.train.latest_checkpoint(checkpoint_dir=checkpoint_path)))
+
+            try:
+                # define the input dictionary for the trained model
+                feed_dict = {self.input_features: sample_feature}
+
+                # get the prediction by the trained model
+                prediction = sess.run(self.predictions, feed_dict=feed_dict)
+
+                # return the prediction
+                return prediction
+
+            except KeyboardInterrupt:
+                print('KeyboardInterrupt.')
+                os._exit(1)
+
+        return None
+
     @staticmethod
     def next_batch(batch_size, features, labels):
         """Returns a batch of features and labels
@@ -236,7 +275,7 @@ class LogisticRegression:
         :param batch_size: The number of data in a batch.
         :param features: The features to be batched.
         :param labels: The labels to be batched.
-        :return:
+        :return: The sampled numpy arrays from the dataset.
         """
 
         # define indices from 0 to n - 1
